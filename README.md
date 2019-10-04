@@ -5,6 +5,7 @@ This Dockerfile allow to bootstrap a pristine, minimal and optimized gentoo imag
 **Recompilinig the whole system twice takes quite some time (~4h on my Macbook Pro using 8 threads: `MAKEOPTS="-j8"`), so it might not be what you want.**
 
 If you have compatible hardware, you can fetch a ready to use image from my Docker Hub repo: https://cloud.docker.com/u/gfrancesco11/repository/docker/gfrancesco11/gentoo-stage4
+
 Images on the Docker Hub have been compiled for an [Intel i9-8950HK CPU](https://ark.intel.com/content/www/us/en/ark/products/134903/intel-core-i9-8950hk-processor-12m-cache-up-to-4-80-ghz.html), using these GCC `-march=native -Os` optimizations.
 
 Some parts of the Dockerfile come from the official Gentoo dockerfile [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images).
@@ -20,10 +21,11 @@ Requirements:
 
 # Build
 1. Create the Buildkit builder
-`docker buildx create --use --name insecure-builder --buildkitd-flags '--allow-insecure-entitlement security.insecure'`
+
+   - `docker buildx create --use --name insecure-builder --buildkitd-flags '--allow-insecure-entitlement security.insecure'`
 2. Choose your build-time customization options:
 
-   - `--build-arg SUFFIX="-nomultilib"` see [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images#inventory) for the full list of options, I only tested `-nomultilib` with `ARCH=amd64`.
+   - `--build-arg SUFFIX="-nomultilib"` see [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images#inventory) for the full list of options, I only tested `-nomultilib` with `ARCH=amd64` (which is the default ARCH).
 
    - `--build-arg CPU_N=4` number of threads used by GCC to compile the packages, the default is `8`.
    
@@ -40,13 +42,23 @@ docker buildx build \
 --allow security.insecure \
 --cache-to=type=local,dest=gentoo_cache \
 --cache-from=type=local,src=gentoo_cache \
---load -t your_user/gentoo-stage4:"$(date -u +%Y%m%d)"
+--load -t your_user/gentoo-stage4:latest
 -f gentoo-stage4.Dockerfile .
 ```
 
 # Result
-The final image is size-optimized, a `nomultilib` build is less than 900 MiB and does not include the portage tree.
+The final image is size-optimized, a `-nomultilib` build is less than 900 MiB and does not include the portage tree.
 
 # Run the container
-[WIP]
+To run the container in interactive mode you can use:
+
 `docker run -t -i --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --cap-add=SYS_PTRACE --rm your_user/gentoo-stage4`
+
+The `--cap-add` statements are required to prevent permission errors/warnings when emerging packages and to be able to emerge some packages like _sys-libs/glibc_, which will otherwise fail to compile. If your application runs without errors/warnings you can remove them.
+
+If you need the portage tree in your container you can mount it as a volume from the official `gentoo/portage` image:
+
+```
+docker create --name portage_c gentoo/portage
+docker run -t -i --rm --volumes-from portage_c your_user/gentoo-stage4:latest
+```
