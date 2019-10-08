@@ -63,5 +63,5 @@ docker create --name portage_c gentoo/portage
 docker run -t -i --rm --volumes-from portage_c your_user/gentoo-stage4:latest
 ```
 # FAQ
-**1. What's the difference between this project and the official [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images) and the gentoo-stage4?**
-   - The official [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images) use a build script, while I preferred to avoid additional code outside the Dockerfile. The `gentoo-stage4` images are pre-configured and entirely recompiled with GCC optimizations, thanks to BuildKit.
+**1. What's the difference between this project and the official [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images)?**
+   - The official [gentoo/gentoo-docker-images](https://github.com/gentoo/gentoo-docker-images) use a wrapper build script, while I preferred to avoid additional code outside the Dockerfile. The `gentoo-stage4` images are pre-configured and entirely recompiled with GCC optimizations, that is possible thanks to BuildKit.
