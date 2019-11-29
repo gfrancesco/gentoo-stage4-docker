@@ -42,7 +42,7 @@ docker buildx build \
 --allow security.insecure \
 --cache-to=type=local,dest=gentoo_cache \
 --cache-from=type=local,src=gentoo_cache \
---load -t your_user/gentoo-stage4:latest \
+--load -t your_user/gentoo-stage4:"$(date -u +%Y%m%d)" \
 -f gentoo-stage4.Dockerfile .
 ```
 
